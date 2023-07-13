@@ -10,6 +10,16 @@ public class DTO {
     @NotNull(message = "date must not be blank")
     private XMLGregorianCalendar date;
 
+    public ChildDTO getChildDTO() {
+        return childDTO;
+    }
+
+    public void setChildDTO(ChildDTO childDTO) {
+        this.childDTO = childDTO;
+    }
+
+    private ChildDTO childDTO;
+
     public String getName() {
         return name;
     }

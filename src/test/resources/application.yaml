@@ -17,6 +17,3 @@ server:
   servlet:
     context-path: /myapi
 
-ws:
-  client:
-    number: http://localhost:8099/NumberConversion.wso
