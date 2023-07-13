@@ -1,0 +1,616 @@
+swagger: '2.0'
+info:
+  title: This is for Contribution Processing Service
+  version: 1.0.0
+host: 'localhost:8080'
+basePath: /
+schemes:
+  - http
+paths:
+  /:
+    get:
+      produces:
+        - application/octet-stream
+      parameters: []
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: string
+      tags:
+        - contribution-processing
+      operationId: index
+      summary: Gives the welcome message
+  '/dataprep/{correlationId}/eventProcessingPlan':
+    get:
+      produces:
+        - application/json
+      parameters:
+        - in: path
+          name: correlationId
+          required: true
+          type: string
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/DataPrepEventProcessingPlanEntity'
+      tags:
+        - data-prepped-processing-controller
+      operationId: getEventProcessingPlanByCorrelationId
+      summary: To get Event Processing Plan for the given Correlation Id
+  '/dataprep/{correlationId}/reprocess':
+    post:
+      produces:
+        - application/json
+      parameters:
+        - in: path
+          name: correlationId
+          required: true
+          type: string
+        - in: query
+          name: force
+          required: false
+          type: boolean
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: string
+      tags:
+        - data-prepped-processing-controller
+      operationId: reprocess_2
+      summary: To reprocess Event Processing Plan for the given Correlation Id
+  /processing/profiles:
+    get:
+      produces:
+        - application/json
+      parameters: []
+      responses:
+        '200':
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/ContributionProfileMappingEntity'
+            type: array
+      tags:
+        - contribution-processing-controller
+      operationId: getProfiles
+      summary: To get all Contribution Profiles
+  /processing/readyEventsProcessingPlan:
+    get:
+      produces:
+        - application/json
+      parameters: []
+      responses:
+        '200':
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/EventProcessingPlanEntity'
+            type: array
+      tags:
+        - contribution-processing-controller
+      operationId: getAll
+      summary: To get all the Event Processing Plan
+  '/processing/readyEventsProcessingPlan/{status}':
+    get:
+      produces:
+        - application/json
+      parameters:
+        - in: path
+          name: status
+          required: true
+          type: string
+        - in: query
+          name: dataDomain
+          required: false
+          type: string
+        - default: 0
+          format: int32
+          in: query
+          name: pageNo
+          required: false
+          type: integer
+        - default: 10
+          format: int32
+          in: query
+          name: pageSize
+          required: false
+          type: integer
+        - format: date-time
+          in: query
+          name: from
+          required: true
+          type: string
+        - format: date-time
+          in: query
+          name: to
+          required: true
+          type: string
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/PageEventProcessingPlanEntity'
+      tags:
+        - contribution-processing-controller
+      operationId: findEventProcessingPlanEntryForJobStatus
+  /processing/reprocess:
+    post:
+      produces:
+        - application/json
+      parameters:
+        - collectionFormat: multi
+          in: query
+          items:
+            type: string
+          name: fileReadyEventIds
+          required: true
+          type: array
+      responses:
+        '200':
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      tags:
+        - contribution-processing-controller
+      operationId: reprocess_1
+  '/processing/{contributionKey}/profile':
+    get:
+      produces:
+        - application/json
+      parameters:
+        - in: path
+          name: contributionKey
+          required: true
+          type: string
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/ContributionProfileMappingEntity'
+      tags:
+        - contribution-processing-controller
+      operationId: getProfile
+      summary: To get the Contribution Profile for the given key
+  '/processing/{fileReadyEventId}/readyEventsProcessingPlan':
+    get:
+      produces:
+        - application/json
+      parameters:
+        - in: path
+          name: fileReadyEventId
+          required: true
+          type: string
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/EventProcessingPlanEntity'
+      tags:
+        - contribution-processing-controller
+      operationId: getEventProcessingPlanByFileReadyEventId
+  '/processing/{fileReadyEventId}/reprocess':
+    post:
+      produces:
+        - application/json
+      parameters:
+        - in: path
+          name: fileReadyEventId
+          required: true
+          type: string
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: string
+      tags:
+        - contribution-processing-controller
+      operationId: reprocess
+      summary: To reprocess Event Processing Plan for the given Event Id
+definitions:
+  Activity:
+    properties:
+      sourcetype:
+        type: string
+      status:
+        type: string
+      type:
+        type: string
+    type: object
+  CloudEventData:
+    properties:
+      activity:
+        $ref: '#/definitions/Activity'
+      context:
+        $ref: '#/definitions/Context'
+      details:
+        items:
+          $ref: '#/definitions/EventInfo'
+        type: array
+      event:
+        type: string
+      lineage:
+        $ref: '#/definitions/Lineage'
+      metrics:
+        items:
+          $ref: '#/definitions/EventInfo'
+        type: array
+      occurrencetime:
+        format: date-time
+        type: string
+      priority:
+        type: string
+    type: object
+  Context:
+    properties:
+      component:
+        type: string
+      phase:
+        type: string
+      subcomponent:
+        type: string
+    type: object
+  ContributionFilesReadyEvent:
+    properties:
+      contributionFiles:
+        items:
+          $ref: '#/definitions/FileMatchedEvent'
+        type: array
+      contributionFilesReadyEventPath:
+        type: string
+      contributionGroupingMode:
+        type: string
+      contributionInstanceId:
+        type: string
+      contributionInstanceProcessingDirectory:
+        type: string
+      contributionKey:
+        type: string
+      contributionProcessingMode:
+        type: string
+      contributorKey:
+        type: string
+      correlationId:
+        type: string
+      dataIntelEvent:
+        $ref: '#/definitions/DataIntelEvent'
+      eventCategory:
+        type: string
+      eventId:
+        type: string
+      eventType:
+        type: string
+      header:
+        additionalProperties:
+          type: string
+        type: object
+      regulatory:
+        type: boolean
+      sourceComponent:
+        type: string
+      sourceSystem:
+        type: string
+      timestamp:
+        format: date-time
+        type: string
+    type: object
+  ContributionFilesReadyEventEntity:
+    properties:
+      contributionFilesGroupingMode:
+        type: string
+      contributionFilesInfo:
+        $ref: '#/definitions/ContributionFilesReadyEvent'
+      contributionFilesProcessingMode:
+        type: string
+      contributionInstanceEventUUID:
+        type: string
+      contributionInstanceId:
+        type: string
+      contributionInstanceProcessingDirectory:
+        type: string
+      created:
+        format: date-time
+        type: string
+      id:
+        type: string
+      modified:
+        format: date-time
+        type: string
+    type: object
+  ContributionProfileMappingEntity:
+    properties:
+      contributionKey:
+        type: string
+      created:
+        format: date-time
+        type: string
+      id:
+        type: string
+      modified:
+        format: date-time
+        type: string
+      profileKey:
+        type: string
+      profileUri:
+        type: string
+      profileVersion:
+        type: string
+    type: object
+  DataIntelEvent:
+    properties:
+      data:
+        $ref: '#/definitions/CloudEventData'
+      datacontenttype:
+        type: string
+      id:
+        type: string
+      source:
+        type: string
+      specversion:
+        type: string
+      time:
+        type: string
+      type:
+        type: string
+    type: object
+  DataPrepEventProcessingPlanEntity:
+    properties:
+      correlationId:
+        type: string
+      created:
+        format: date-time
+        type: string
+      id:
+        type: string
+      jobId:
+        type: string
+      jobRequestAttemptCount:
+        format: int32
+        type: integer
+      jobRootDir:
+        type: string
+      modified:
+        format: date-time
+        type: string
+      status:
+        type: string
+    type: object
+  EventInfo:
+    properties:
+      name:
+        type: string
+      ns:
+        type: string
+      parentId:
+        type: string
+      ref:
+        type: string
+      value:
+        type: string
+    type: object
+  EventProcessingPlanEntity:
+    properties:
+      contributionFilesReadyEventEntity:
+        $ref: '#/definitions/ContributionFilesReadyEventEntity'
+      contributionKey:
+        type: string
+      contributorKey:
+        type: string
+      created:
+        format: date-time
+        type: string
+      dataDomain:
+        type: string
+      fileUUIDArray:
+        items:
+          type: string
+        type: array
+      id:
+        type: string
+      jobId:
+        type: string
+      jobInputData:
+        type: string
+      jobRequestAttemptCount:
+        format: int32
+        type: integer
+      modified:
+        format: date-time
+        type: string
+      state:
+        type: string
+      status:
+        type: string
+    type: object
+  FileAttributes:
+    properties:
+      contributionFileUUID:
+        type: string
+      footerAttributes:
+        additionalProperties:
+          type: string
+        type: object
+      headerAttributes:
+        additionalProperties:
+          type: string
+        type: object
+    type: object
+  FileMatchedEvent:
+    properties:
+      contributionFileDetectedTime:
+        type: string
+      contributionFileMetaInfo:
+        additionalProperties:
+          type: string
+        type: object
+      contributionFileName:
+        type: string
+      contributionFilePath:
+        type: string
+      contributionFileSize:
+        format: int64
+        type: integer
+      contributionFileUUID:
+        type: string
+      contributionId:
+        type: string
+      contributionInstanceId:
+        type: string
+      contributionKey:
+        type: string
+      contributionName:
+        type: string
+      contributionOriginalFilePath:
+        type: string
+      contributionProcessingMode:
+        type: string
+      contributionStatus:
+        type: string
+      contributorKey:
+        type: string
+      contributorName:
+        type: string
+      contributorRootDirectory:
+        type: string
+      contributorStatus:
+        type: string
+      correlationId:
+        type: string
+      dataIntelEvent:
+        $ref: '#/definitions/DataIntelEvent'
+      eventCategory:
+        type: string
+      eventId:
+        type: string
+      eventType:
+        type: string
+      fileAttributes:
+        $ref: '#/definitions/FileAttributes'
+      groupingConfiguration:
+        $ref: '#/definitions/GroupingConfiguration'
+      header:
+        additionalProperties:
+          type: string
+        type: object
+      regulatory:
+        type: boolean
+      sourceComponent:
+        type: string
+      sourceSystem:
+        type: string
+      timestamp:
+        format: date-time
+        type: string
+    type: object
+  GroupingConfiguration:
+    properties:
+      detectionMode:
+        type: string
+      groupingMode:
+        type: string
+      numberOfFiles:
+        type: string
+      waitThreshold:
+        type: string
+    type: object
+  Lineage:
+    properties:
+      aggregatorids:
+        items:
+          type: string
+        type: array
+        uniqueItems: true
+      dfcorrelationids:
+        items:
+          type: string
+        type: array
+        uniqueItems: true
+      dfsourceids:
+        items:
+          type: string
+        type: array
+        uniqueItems: true
+      domain:
+        type: string
+      geo:
+        type: string
+      memberids:
+        items:
+          type: string
+        type: array
+        uniqueItems: true
+      subdomains:
+        items:
+          type: string
+        type: array
+        uniqueItems: true
+      supplierids:
+        items:
+          type: string
+        type: array
+        uniqueItems: true
+    type: object
+  PageEventProcessingPlanEntity:
+    properties:
+      content:
+        items:
+          $ref: '#/definitions/EventProcessingPlanEntity'
+        type: array
+      empty:
+        type: boolean
+      first:
+        type: boolean
+      last:
+        type: boolean
+      number:
+        format: int32
+        type: integer
+      numberOfElements:
+        format: int32
+        type: integer
+      pageable:
+        $ref: '#/definitions/PageableObject'
+      size:
+        format: int32
+        type: integer
+      sort:
+        $ref: '#/definitions/SortObject'
+      totalElements:
+        format: int64
+        type: integer
+      totalPages:
+        format: int32
+        type: integer
+    type: object
+  PageableObject:
+    properties:
+      offset:
+        format: int64
+        type: integer
+      pageNumber:
+        format: int32
+        type: integer
+      pageSize:
+        format: int32
+        type: integer
+      paged:
+        type: boolean
+      sort:
+        $ref: '#/definitions/SortObject'
+      unpaged:
+        type: boolean
+    type: object
+  SortObject:
+    properties:
+      empty:
+        type: boolean
+      sorted:
+        type: boolean
+      unsorted:
+        type: boolean
+    type: object
+x-components: {}
